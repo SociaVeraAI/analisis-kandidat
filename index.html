@@ -1,1 +1,340 @@
-<!doctype html><meta charset="utf-8"><title>OK</title><h1>Halo Dunia</h1>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Analisis Kandidat – Demo Lokal</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    html,body{height:100%}
+    ::-webkit-scrollbar{height:10px;width:10px}
+    ::-webkit-scrollbar-thumb{background:#374151;border-radius:8px}
+  </style>
+</head>
+<body class="min-h-full bg-gray-900 text-gray-100">
+  <header class="sticky top-0 z-10 backdrop-blur bg-gray-900/70 border-b border-gray-800">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Analisis Kandidat (Demo Lokal)</h1>
+      <div class="text-xs text-gray-400">Data disimpan di <span class="font-semibold">localStorage</span></div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 grid gap-6 md:grid-cols-2">
+    <!-- Input Data Pengguna -->
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <h2 class="text-2xl font-bold mb-4">Masukkan Data</h2>
+      <div class="space-y-4">
+        <div>
+          <label for="candidate" class="block text-sm font-medium text-gray-300 mb-1">Pilih Kandidat</label>
+          <select id="candidate" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Pilih Kandidat</option>
+            <option>Prabowo</option>
+            <option>AHY</option>
+            <option>Gibran</option>
+            <option>Anies</option>
+          </select>
+        </div>
+        <div>
+          <label for="dataInput" class="block text-sm font-medium text-gray-300 mb-1">Masukkan link berita, video, atau teks...</label>
+          <textarea id="dataInput" rows="5" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: https://news.com/artikel… atau ‘Kandidat A berpidato tentang ekonomi digital…’"></textarea>
+        </div>
+        <button id="submitDataButton" class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition duration-200">Tambahkan Data</button>
+        <div class="flex gap-2 text-xs text-gray-400">
+          <button id="clearDataButton" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Bersihkan Riwayat</button>
+          <button id="exportDataButton" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Ekspor JSON</button>
+          <input id="importFile" type="file" accept="application/json" class="hidden"/>
+          <button id="importDataButton" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Impor JSON</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Riwayat Data Pengguna -->
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <h2 class="text-2xl font-bold mb-4">Riwayat Data Anda</h2>
+      <div id="userHistory" class="space-y-3 max-h-72 overflow-y-auto">
+        <p class="text-gray-400 text-center">Riwayat data yang Anda masukkan akan muncul di sini.</p>
+      </div>
+    </section>
+
+    <!-- Pendapat Pribadi Pengguna -->
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <h2 class="text-2xl font-bold mb-4">Pendapat Pribadi Anda (Bryan Bilven)</h2>
+      <div class="space-y-4">
+        <div>
+          <label for="opinionCandidate" class="block text-sm font-medium text-gray-300 mb-1">Untuk Kandidat</label>
+          <select id="opinionCandidate" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Pilih Kandidat</option>
+            <option>Prabowo</option>
+            <option>AHY</option>
+            <option>Gibran</option>
+            <option>Anies</option>
+          </select>
+        </div>
+        <div>
+          <label for="personalOpinionInput" class="block text-sm font-medium text-gray-300 mb-1">Tulis opini pribadi Anda:</label>
+          <textarea id="personalOpinionInput" rows="3" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: ‘Saya rasa visi ekonomi X realistis…’"></textarea>
+        </div>
+        <button id="saveOpinionButton" class="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition duration-200">Simpan Opini</button>
+      </div>
+      <div id="personalOpinionHistory" class="mt-4 space-y-3 max-h-72 overflow-y-auto">
+        <p class="text-gray-400 text-center">Riwayat opini pribadi Anda akan muncul di sini.</p>
+      </div>
+    </section>
+
+    <!-- Analisis AI (lokal / heuristik) -->
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg md:col-span-2">
+      <h2 class="text-2xl font-bold mb-4">Analisis “AI” Berdasarkan Data Anda</h2>
+      <p class="text-gray-400 mb-4">Tombol ini menjalankan analisis <em>offline</em> sederhana (heuristik kata kunci). Tidak memanggil API eksternal.</p>
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <select id="analysisCandidate" class="w-full sm:w-64 p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+          <option value="">Semua Kandidat</option>
+          <option>Prabowo</option>
+          <option>AHY</option>
+          <option>Gibran</option>
+          <option>Anies</option>
+        </select>
+        <button id="askGeminiButton" class="w-full sm:w-auto py-3 px-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-bold rounded-lg shadow-lg hover:from-purple-600 hover:to-purple-700 transition">Jalankan Analisis</button>
+      </div>
+      <div id="aiOutput" class="mt-4 p-4 text-sm bg-gray-900 rounded-lg text-gray-300 whitespace-pre-wrap min-h-[100px]">Analisis akan muncul di sini…</div>
+    </section>
+
+    <!-- Grafik Utama -->
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg md:col-span-2">
+      <h2 class="text-2xl font-bold mb-4">Tren Sentimen Kandidat</h2>
+      <p class="text-gray-400 mb-4">Grafik contoh dari Juni 2024 hingga Juli 2025. Anda bisa regenerasi dari data yang Anda masukkan.</p>
+      <div class="h-96"><canvas id="sentimentChart"></canvas></div>
+      <div class="mt-3 flex gap-2 text-xs text-gray-400">
+        <button id="regenChart" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Perbarui Grafik dari Riwayat</button>
+        <button id="resetChart" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Reset ke Dummy</button>
+      </div>
+    </section>
+
+    <!-- Peta Panas Placeholder -->
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg md:col-span-2">
+      <h2 class="text-2xl font-bold mb-4">Dukungan Regional</h2>
+      <p class="text-gray-400 mb-4">Placeholder peta panas Indonesia. (Anda bisa mengganti dengan lib peta seperti Leaflet + geojson).</p>
+      <div class="h-72 bg-gray-700 flex items-center justify-center rounded-2xl">
+        <p class="text-gray-300 text-lg">Peta panas akan muncul di sini.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ---------------- State & Helpers ----------------
+    const STORE = {
+      entries: 'ak_entries_v1',
+      opinions: 'ak_opinions_v1'
+    };
+
+    const el = sel => document.querySelector(sel);
+    const fmtTime = ts => new Date(ts).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+
+    const load = (k, d=[]) => { try { return JSON.parse(localStorage.getItem(k)) || d } catch { return d } };
+    const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+    let entries = load(STORE.entries); // {id, candidate, content, ts}
+    let opinions = load(STORE.opinions); // {id, candidate, content, ts}
+
+    function renderEntries(){
+      const wrap = el('#userHistory');
+      wrap.innerHTML = '';
+      if(!entries.length){
+        wrap.innerHTML = '<p class="text-gray-400 text-center">Riwayat data yang Anda masukkan akan muncul di sini.</p>';
+        return;
+      }
+      for(const it of entries.slice().reverse()){
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-xl border border-gray-700 bg-gray-900';
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-sm text-gray-400">${fmtTime(it.ts)} • <span class="px-2 py-0.5 rounded bg-gray-700">${it.candidate||'Tidak ditentukan'}</span></div>
+              <div class="mt-1 whitespace-pre-wrap">${escapeHtml(it.content)}</div>
+            </div>
+            <button class="shrink-0 text-red-300 hover:text-red-400" title="Hapus" data-del="${it.id}">✕</button>
+          </div>`;
+        card.querySelector('[data-del]').onclick = () => {
+          entries = entries.filter(e => e.id !== it.id); save(STORE.entries, entries); renderEntries();
+        };
+        wrap.appendChild(card);
+      }
+    }
+
+    function renderOpinions(){
+      const wrap = el('#personalOpinionHistory');
+      wrap.innerHTML = '';
+      if(!opinions.length){
+        wrap.innerHTML = '<p class="text-gray-400 text-center">Riwayat opini pribadi Anda akan muncul di sini.</p>';
+        return;
+      }
+      for(const it of opinions.slice().reverse()){
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-xl border border-gray-700 bg-gray-900';
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-sm text-gray-400">${fmtTime(it.ts)} • <span class="px-2 py-0.5 rounded bg-gray-700">${it.candidate||'Tidak ditentukan'}</span></div>
+              <div class="mt-1 whitespace-pre-wrap">${escapeHtml(it.content)}</div>
+            </div>
+            <button class="shrink-0 text-red-300 hover:text-red-400" title="Hapus" data-del="${it.id}">✕</button>
+          </div>`;
+        card.querySelector('[data-del]').onclick = () => {
+          opinions = opinions.filter(e => e.id !== it.id); save(STORE.opinions, opinions); renderOpinions();
+        };
+        wrap.appendChild(card);
+      }
+    }
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));
+    }
+
+    // --------------- Input handlers ---------------
+    el('#submitDataButton').onclick = () => {
+      const cand = el('#candidate').value.trim();
+      const txt = el('#dataInput').value.trim();
+      if(!txt){ alert('Isi teks/link terlebih dahulu.'); return; }
+      entries.push({ id: crypto.randomUUID(), candidate: cand, content: txt, ts: Date.now() });
+      save(STORE.entries, entries); el('#dataInput').value = '';
+      renderEntries();
+    };
+
+    el('#clearDataButton').onclick = () => {
+      if(confirm('Hapus seluruh riwayat data?')){ entries = []; save(STORE.entries, entries); renderEntries(); }
+    };
+
+    el('#exportDataButton').onclick = () => {
+      const blob = new Blob([JSON.stringify({ entries, opinions }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement('a'), { href:url, download:'analisis-kandidat-data.json' });
+      document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    };
+
+    el('#importDataButton').onclick = () => el('#importFile').click();
+    el('#importFile').onchange = async (e) => {
+      const f = e.target.files?.[0]; if(!f) return; const text = await f.text();
+      try{
+        const obj = JSON.parse(text);
+        if(Array.isArray(obj.entries)) entries = obj.entries;
+        if(Array.isArray(obj.opinions)) opinions = obj.opinions;
+        save(STORE.entries, entries); save(STORE.opinions, opinions);
+        renderEntries(); renderOpinions(); regenChartFromEntries();
+      }catch(err){ alert('File tidak valid.'); }
+      e.target.value='';
+    };
+
+    el('#saveOpinionButton').onclick = () => {
+      const cand = el('#opinionCandidate').value.trim();
+      const txt = el('#personalOpinionInput').value.trim();
+      if(!txt){ alert('Tulis opini terlebih dahulu.'); return; }
+      opinions.push({ id: crypto.randomUUID(), candidate: cand, content: txt, ts: Date.now() });
+      save(STORE.opinions, opinions); el('#personalOpinionInput').value='';
+      renderOpinions();
+    };
+
+    // --------------- Analisis Heuristik Lokal ---------------
+    const POS = ['baik','bagus','kuat','stabil','maju','unggul','positif','berhasil','reformasi','transparan','jujur','adil','inovasi','keren'];
+    const NEG = ['buruk','lemah','gagal','negatif','masalah','korup','hoaks','radikal','risiko','ancaman','mahal','keterlambatan','kontroversi'];
+
+    function scoreSentiment(text){
+      const t = text.toLowerCase();
+      let s=0; POS.forEach(k=>{ if(t.includes(k)) s+=1 }); NEG.forEach(k=>{ if(t.includes(k)) s-=1 });
+      return s; // >0 positif; <0 negatif; 0 netral
+    }
+
+    el('#askGeminiButton').onclick = () => {
+      const chosen = el('#analysisCandidate').value.trim();
+      const data = entries.filter(e => !chosen || e.candidate===chosen);
+      if(!data.length){ el('#aiOutput').textContent = 'Belum ada data yang cocok untuk dianalisis.'; return; }
+
+      const scores = data.map(d => scoreSentiment(d.content));
+      const total = scores.reduce((a,b)=>a+b,0);
+      const pos = scores.filter(s=>s>0).length;
+      const neg = scores.filter(s=>s<0).length;
+      const neu = scores.filter(s=>s===0).length;
+
+      const avg = (total / scores.length) || 0;
+      const tone = avg>0? 'cenderung POSITIF' : avg<0? 'cenderung NEGATIF' : 'NETRAL';
+
+      const rec = [];
+      if(neg>pos) rec.push('Perbanyak sumber kredibel yang membahas kebijakan/track record untuk menyeimbangkan narasi.');
+      if(neu>0) rec.push('Tambahkan detail spesifik (program, angka, timeline) agar analisis lebih tajam.');
+      if(pos>=neg) rec.push('Validasi klaim positif dengan data resmi atau laporan independen.');
+
+      const out = [
+        `Ringkasan untuk: ${chosen||'Semua Kandidat'}`,
+        `• Jumlah data dianalisis: ${data.length}`,
+        `• Skor rata-rata (≈ heuristik): ${avg.toFixed(2)} (${tone})`,
+        `• Komposisi: ${pos} positif | ${neu} netral | ${neg} negatif`,
+        '',
+        'Catatan: Ini analisis lokal berbasis kata kunci sederhana, bukan penilaian politik atau saran memilih.',
+        (rec.length?'\nSaran pengayaan:\n- '+rec.join('\n- '):'')
+      ].join('\n');
+      el('#aiOutput').textContent = out;
+    };
+
+    // --------------- Chart ----------------
+    const ctx = document.getElementById('sentimentChart');
+    let chart;
+
+    function makeDummy(){
+      const labels = [
+        '2024-06','2024-07','2024-08','2024-09','2024-10','2024-11','2024-12',
+        '2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07'
+      ];
+      const series = (k) => labels.map((_,i)=> Math.round((Math.sin(i/2 + k)*0.8 + Math.random()*0.6)*10)/10 );
+      return { labels, datasets:[
+        { label:'Prabowo', data:series(0) },
+        { label:'AHY', data:series(1) },
+        { label:'Gibran', data:series(2) },
+        { label:'Anies', data:series(3) },
+      ]};
+    }
+
+    function initChart(data){
+      if(chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type:'line',
+        data,
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          scales:{ y:{ beginAtZero:true, suggestedMin:-2, suggestedMax:2, title:{ display:true, text:'Skor Sentimen (≈)' } } },
+          plugins:{ legend:{ labels:{ color:'#e5e7eb' } } }
+        }
+      });
+    }
+
+    function regenChartFromEntries(){
+      // Agregasi sederhana per kandidat dari entries (skor rata-rata per bulan)
+      if(!entries.length){ initChart(makeDummy()); return; }
+      const months = {};
+      for(const e of entries){
+        const d = new Date(e.ts); const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        months[key] = months[key] || { Prabowo:[], AHY:[], Gibran:[], Anies:[] };
+        const s = scoreSentiment(e.content);
+        const cand = e.candidate && ['Prabowo','AHY','Gibran','Anies'].includes(e.candidate) ? e.candidate : null;
+        if(cand) months[key][cand].push(s);
+      }
+      const labels = Object.keys(months).sort();
+      const avg = (arr)=> arr.length? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+      const ds = ['Prabowo','AHY','Gibran','Anies'].map(name=>({
+        label:name,
+        data: labels.map(m => avg(months[m][name]||[]))
+      }));
+      initChart({ labels, datasets: ds });
+    }
+
+    el('#regenChart').onclick = regenChartFromEntries;
+    el('#resetChart').onclick = () => initChart(makeDummy());
+
+    // --------------- Boot ---------------
+    renderEntries();
+    renderOpinions();
+    initChart(makeDummy());
+  </script>
+</body>
+</html>
