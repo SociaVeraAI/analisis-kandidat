@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Analisis Kandidat - Demo lokal untuk analisis data kandidat secara offline.">
+    <meta name="author" content="Bryan Bilven">
+    <meta name="keywords" content="analisis kandidat, demo lokal, AI, heuristik, politik">
+    <title>Analisis Kandidat – Demo Lokal</title>
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+        html,body{height:100%}
+        ::-webkit-scrollbar{height:10px;width:10px}
+        ::-webkit-scrollbar-thumb{background:#374151;border-radius:8px}
+    </style>
+</head>
+<body class="min-h-full bg-gray-900 text-gray-100">
+    <header class="sticky top-0 z-10 backdrop-blur bg-gray-900/70 border-b border-gray-800">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 class="text-2xl font-bold">Analisis Kandidat (Demo Lokal)</h1>
+            <div class="text-xs text-gray-400">Data disimpan di <span class="font-semibold">localStorage</span></div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 grid gap-6 md:grid-cols-2">
+        <!-- Input Data Pengguna -->
+        <section class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-bold mb-4">Masukkan Data</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="candidate" class="block text-sm font-medium text-gray-300 mb-1">Pilih Kandidat</label>
+                    <select id="candidate" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Pilih Kandidat</option>
+                        <option>Prabowo</option>
+                        <option>AHY</option>
+                        <option>Gibran</option>
+                        <option>Anies</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="dataInput" class="block text-sm font-medium text-gray-300 mb-1">Masukkan link berita, video, atau teks...</label>
+                    <textarea id="dataInput" rows="5" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: https://news.com/artikel… atau ‘Kandidat A berpidato tentang ekonomi digital…’"></textarea>
+                </div>
+                <button id="submitDataButton" class="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition duration-200">Tambahkan Data</button>
+                <div class="flex gap-2 text-xs text-gray-400">
+                    <button id="clearDataButton" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Bersihkan Riwayat</button>
+                    <button id="exportDataButton" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Ekspor JSON</button>
+                    <input id="importFile" type="file" accept="application/json" class="hidden"/>
+                    <button id="importDataButton" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Impor JSON</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Riwayat Data Pengguna -->
+        <section class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-bold mb-4">Riwayat Data Anda</h2>
+            <div id="userHistory" class="space-y-3 max-h-72 overflow-y-auto">
+                <p class="text-gray-400 text-center">Riwayat data yang Anda masukkan akan muncul di sini.</p>
+            </div>
+        </section>
+
+        <!-- Pendapat Pribadi Pengguna -->
+        <section class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-bold mb-4">Pendapat Pribadi Anda (Bryan Bilven)</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="opinionCandidate" class="block text-sm font-medium text-gray-300 mb-1">Untuk Kandidat</label>
+                    <select id="opinionCandidate" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Pilih Kandidat</option>
+                        <option>Prabowo</option>
+                        <option>AHY</option>
+                        <option>Gibran</option>
+                        <option>Anies</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="personalOpinionInput" class="block text-sm font-medium text-gray-300 mb-1">Tulis opini pribadi Anda:</label>
+                    <textarea id="personalOpinionInput" rows="3" class="w-full p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: ‘Saya rasa visi ekonomi X realistis…’"></textarea>
+                </div>
+                <button id="saveOpinionButton" class="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition duration-200">Simpan Opini</button>
+            </div>
+            <div id="personalOpinionHistory" class="mt-4 space-y-3 max-h-72 overflow-y-auto">
+                <p class="text-gray-400 text-center">Riwayat opini pribadi Anda akan muncul di sini.</p>
+            </div>
+        </section>
+
+        <!-- Analisis AI (lokal / heuristik) -->
+        <section class="bg-gray-800 p-6 rounded-2xl shadow-lg md:col-span-2">
+            <h2 class="text-2xl font-bold mb-4">Analisis “AI” Berdasarkan Data Anda</h2>
+            <p class="text-gray-400 mb-4">Tombol ini menjalankan analisis <em>offline</em> sederhana (heuristik kata kunci). Tidak memanggil API eksternal.</p>
+            <div class="flex flex-col gap-3 sm:flex-row">
+                <select id="analysisCandidate" class="w-full sm:w-64 p-3 bg-gray-900 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Semua Kandidat</option>
+                    <option>Prabowo</option>
+                    <option>AHY</option>
+                    <option>Gibran</option>
+                    <option>Anies</option>
+                </select>
+                <button id="askGeminiButton" class="w-full sm:w-auto py-3 px-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-bold rounded-lg shadow-lg hover:from-purple-600 hover:to-purple-700 transition">Jalankan Analisis</button>
+            </div>
+            <div id="aiOutput" class="mt-4 p-4 text-sm bg-gray-900 rounded-lg text-gray-300 whitespace-pre-wrap min-h-[100px]">Analisis akan muncul di sini…</div>
+        </section>
+
+        <!-- Grafik Utama -->
+        <section class="bg-gray-800 p-6 rounded-2xl shadow-lg md:col-span-2">
+            <h2 class="text-2xl font-bold mb-4">Tren Sentimen Kandidat</h2>
+            <p class="text-gray-400 mb-4">Grafik contoh dari Juni 2024 hingga Juli 2025. Anda bisa regenerasi dari data yang Anda masukkan.</p>
+            <div class="h-96"><canvas id="sentimentChart"></canvas></div>
+            <div class="mt-3 flex gap-2 text-xs text-gray-400">
+                <button id="regenChart" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Perbarui Grafik dari Riwayat</button>
+                <button id="resetChart" class="px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700">Reset ke Dummy</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="./script.js"></script>
+</body>
+</html>
